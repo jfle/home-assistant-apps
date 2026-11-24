@@ -66,6 +66,7 @@ class StremioProxyView(HomeAssistantView):
             url += f"?{request.query_string}"
 
         headers = {k: v for k, v in request.headers.items() if k.lower() not in HOP | PRIVATE | NO_FORWARD}
+        headers["Accept-Encoding"] = "identity"  # aiohttp would otherwise ask for gzip/br on its own
         headers["X-Forwarded-Host"] = request.host
         headers["X-Forwarded-Proto"] = request.headers.get("X-Forwarded-Proto", "https")
         headers["X-Forwarded-Prefix"] = prefix
