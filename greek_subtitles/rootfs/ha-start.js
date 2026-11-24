@@ -294,7 +294,7 @@ async function migrate() {
   const custom = String(opt('public_url')).trim().replace(/\/+$/, '');
   if (opt('public_access', true)) {
     if (custom) {
-      if (!/^https:\/\/[a-z0-9.-]+(:\d{1,5})?$/i.test(custom)) warn('public_url must be an https:// origin (Stremio requires HTTPS); ignoring it');
+      if (!/^https:\/\/[a-z0-9.-]+(:\d{1,5})?(\/[\w.~-]+)*$/i.test(custom)) warn('public_url must be an https:// address, optionally with a path (Stremio requires HTTPS); ignoring it');
       else extUrl = custom;
     } else {
       const pub = await publicIp();

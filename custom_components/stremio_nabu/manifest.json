@@ -1,0 +1,15 @@
+{
+  "domain": "stremio_nabu",
+  "name": "Stremio via Nabu Casa",
+  "codeowners": ["@jfle"],
+  "config_flow": true,
+  "dependencies": ["http"],
+  "after_dependencies": ["cloud"],
+  "documentation": "https://github.com/jfle/home-assistant-apps#stremio-via-nabu-casa",
+  "integration_type": "service",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/jfle/home-assistant-apps/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "1.0.0"
+}

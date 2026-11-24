@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.38.1-3
+- `public_url` may include a path, for the Nabu Casa address of the **Stremio via Nabu Casa** integration
+  (e.g. `https://<id>.ui.nabu.casa/api/stremio/aio`) — no router port forwarding needed.
+
 ## 2.38.1-2
 - One-time import of an Orange Pi install (`migrate_from`): database, secret key and admin login come across, so
   existing manifests, users and saved configurations keep working. Replaced data is kept in /data/pre-migration-*.

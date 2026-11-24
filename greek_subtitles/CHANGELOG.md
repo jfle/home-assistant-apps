@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.2
+- Packages AIO-Streams&Subtitles-Greek 3.0.1 (configure page works behind a path prefix).
+- `public_url` may include a path, for the Nabu Casa address of the **Stremio via Nabu Casa** integration
+  (e.g. `https://<id>.ui.nabu.casa/api/stremio/subs`) — no router port forwarding needed.
+
 ## 3.0.1
 - One-time import of an Orange Pi install (`migrate_from`): secret key, provider sign-ins, settings and configuration
   password come across, so existing Stremio install links keep working. Replaced data is kept in /data/pre-migration-*.

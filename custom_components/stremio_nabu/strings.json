@@ -1,0 +1,20 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Stremio via Nabu Casa",
+        "description": "Publishes the Greek Subtitles and AIOStreams apps on your Nabu Casa address under /api/stremio/subs and /api/stremio/aio. The defaults fit the apps from jfle/home-assistant-apps.",
+        "data": { "subtitles_url": "Greek Subtitles app (internal)", "aiostreams_url": "AIOStreams app (internal)" }
+      }
+    },
+    "abort": { "already_configured": "Already set up", "single_instance_allowed": "Already set up" }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Stremio via Nabu Casa",
+        "data": { "subtitles_url": "Greek Subtitles app (internal)", "aiostreams_url": "AIOStreams app (internal)" }
+      }
+    }
+  }
+}

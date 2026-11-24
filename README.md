@@ -21,6 +21,23 @@ with the same HTTPS, outside access and port forwarding as the Orange Pi install
 > **Not HACS:** HACS installs integrations and dashboard cards, not apps. Apps are installed from the app store with
 > this repository URL, and Home Assistant offers their updates like any other app.
 
+## Stremio via Nabu Casa
+Have Home Assistant Cloud (Nabu Casa)? Use it instead of router port forwarding. This repository also holds a small
+integration, **Stremio via Nabu Casa**, that publishes both apps on your Nabu Casa address:
+
+| | Address |
+|---|---|
+| Greek Subtitles | `https://<id>.ui.nabu.casa/api/stremio/subs` (configure page: `/configure`, needs the configuration password) |
+| AIOStreams | `https://<id>.ui.nabu.casa/api/stremio/aio` (Stremio endpoints; open its web page at home) |
+
+1. **Marketplace / HACS → ⋮ → Custom repositories** → `jfle/home-assistant-apps`, type *Integration* → download
+   **Stremio via Nabu Casa**, restart Home Assistant.
+2. **Settings → Devices & services → Add integration → Stremio via Nabu Casa** (defaults fit these apps). Its
+   *Remote address* sensor shows your exact URLs.
+3. Set each app's `public_url` to its address above and restart the app; reinstall the addons in Stremio from the new links.
+
+Only manifests, stream lists, subtitles and short redirects pass through Home Assistant — the video always comes straight
+from your debrid service to the player.
 ## Running next to the Orange Pi
 These apps use their own ports (**8453** subtitles, **8454** AIOStreams) so they don't collide with the Pi
 installation (8443 / 8444). Both can run at the same time; Stremio uses whichever addon link you installed.
