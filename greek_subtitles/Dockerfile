@@ -10,3 +10,7 @@ RUN apk add --no-cache --virtual .fetch curl tar \
 
 COPY rootfs/ha-start.js /ha-start.js
 ENTRYPOINT ["node", "/ha-start.js", "subtitles"]
+
+# Home Assistant restarts the app when this fails (replaces the old "watchdog")
+HEALTHCHECK --interval=60s --timeout=10s --start-period=60s --retries=3 \
+  CMD ["node", "-e", "require('https').get({host:'127.0.0.1',port:8453,path:'/health',rejectUnauthorized:false},r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
