@@ -39,6 +39,5 @@ jobs:
         run: |
           test ! -f ${{ matrix.app }}/build.yaml
           PLAT=$([ "${{ matrix.arch }}" = aarch64 ] && echo linux/arm64 || echo linux/amd64)
-          docker buildx build ${{ matrix.app }} --file Dockerfile --platform $PLAT --pull \
+          cd ${{ matrix.app }} && docker buildx build . --file Dockerfile --platform $PLAT --pull \
             --build-arg BUILD_FROM=ghcr.io/home-assistant/base:latest --build-arg BUILD_ARCH=${{ matrix.arch }} --load -t test
-          docker run --rm --entrypoint "" test sh -c 'true' 2>/dev/null || true
