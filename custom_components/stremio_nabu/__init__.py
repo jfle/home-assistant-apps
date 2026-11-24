@@ -32,6 +32,8 @@ HOP = {
 }
 # never hand Home Assistant's own login cookies / tokens to the apps
 PRIVATE = {"authorization", "cookie"}
+# ask the apps for plain bodies: Home Assistant streams them on as-is (and may compress them itself)
+NO_FORWARD = {"accept-encoding"}
 MAX_BODY = 4 * 1024 * 1024
 TIMEOUT = aiohttp.ClientTimeout(total=300, sock_connect=10)
 
@@ -63,7 +65,7 @@ class StremioProxyView(HomeAssistantView):
         if request.query_string:
             url += f"?{request.query_string}"
 
-        headers = {k: v for k, v in request.headers.items() if k.lower() not in HOP | PRIVATE}
+        headers = {k: v for k, v in request.headers.items() if k.lower() not in HOP | PRIVATE | NO_FORWARD}
         headers["X-Forwarded-Host"] = request.host
         headers["X-Forwarded-Proto"] = request.headers.get("X-Forwarded-Proto", "https")
         headers["X-Forwarded-Prefix"] = prefix
