@@ -11,7 +11,7 @@
 //   • Secrets generated once and kept in /data: configuration password, AIOStreams secret key and admin password.
 //   • Clear log lines with the addresses and the router port-forwarding to set up.
 //
-// Usage: node ha-start.js subtitles | aiostreams
+// Usage: node ha-start.js subtitles | aiostreams | aiometadata
 
 const fs = require('fs');
 const path = require('path');
@@ -44,9 +44,17 @@ const APPS = {
     cwd: '/app',
     health: '/api/v1/status',
   },
+  aiometadata: {
+    name: 'AIOMetadata',
+    httpsPort: 8455,
+    innerPort: 3232,
+    command: () => [process.execPath, ['dist/server/server.js']],
+    cwd: '/app',
+    health: '/health/live',
+  },
 };
 const APP = APPS[MODE];
-if (!APP) { console.error('usage: ha-start.js subtitles|aiostreams'); process.exit(2); }
+if (!APP) { console.error('usage: ha-start.js subtitles|aiostreams|aiometadata'); process.exit(2); }
 
 const log = (...a) => console.log(`[${new Date().toISOString().slice(11, 19)}] ${APP.name}:`, ...a);
 const warn = (...a) => console.warn(`[${new Date().toISOString().slice(11, 19)}] ${APP.name}: ⚠`, ...a);
@@ -257,6 +265,22 @@ async function migrate() {
     }
     const e = envOf('etc/aio-streams-subtitles-greek.env');
     if (e && e.CONFIG_PASSWORD) { s.config_password = e.CONFIG_PASSWORD; done.push('configuration password'); }
+  } else if (MODE === 'aiometadata') {
+    // archive of the Pi's Docker volume (…/volumes/<name>aiometadata<…>/_data/…) plus its container environment
+    const re = /^var\/lib\/docker\/volumes\/[^/]*aiometadata[^/]*\/_data\/(.+)$/;
+    const data = files.filter((f) => re.test(f.name));
+    if (data.length) {
+      stash('app');
+      let n = 0;
+      for (const f of data) if (write(path.join(DATA, 'app'), re.exec(f.name)[1], f.body)) n++;
+      done.push(n + ' data files (database with your configurations, caches)');
+    }
+    const e = envOf('root/aiometadata.env');
+    if (e) {
+      const keep = {};
+      for (const [k, v] of Object.entries(e)) if (v && !/^(PATH|NODE_VERSION|YARN_VERSION|HOST_NAME|PORT|DATABASE_URI|DATABASE_URL|REDIS_URL|UV_THREADPOOL_SIZE|DOTENV_CONFIG_QUIET|HOSTNAME|HOME)$/.test(k)) keep[k] = v;
+      if (Object.keys(keep).length) { s.extra_env = keep; done.push('settings (' + Object.keys(keep).join(', ') + ')'); }
+    }
   } else {
     const dbs = files.filter((f) => /^opt\/aiostreams\/data\/db\.sqlite(-wal|-shm|-journal)?$/.test(f.name));
     if (dbs.length) {
@@ -278,6 +302,17 @@ async function migrate() {
   writePrivate(SECRETS_FILE, JSON.stringify(s, null, 2));
   writePrivate(mark, JSON.stringify({ id, at: new Date().toISOString(), imported: done, backup }, null, 2));
   log('✓ imported from the Orange Pi: ' + done.join(', '));
+}
+
+// ------------------------------------------------------------------------------------------- redis (AIOMetadata cache)
+function startRedis() {
+  const dir = path.join(DATA, 'redis');
+  fs.mkdirSync(dir, { recursive: true });
+  const go = () => {
+    const r = spawn('redis-server', ['--bind', '127.0.0.1', '--port', '6379', '--dir', dir, '--save', '900 1', '--save', '300 100', '--maxmemory', '256mb', '--maxmemory-policy', 'allkeys-lru', '--protected-mode', 'yes'], { stdio: ['ignore', 'ignore', 'inherit'] });
+    r.on('exit', (c) => { warn(`redis stopped (${c}); restarting in 3 s`); setTimeout(go, 3000); });
+  };
+  go();
 }
 
 // ------------------------------------------------------------------------------------------- install links
@@ -336,6 +371,16 @@ function printInstallLinks(env, lanUrl, extUrl) {
       AIOSTREAMS_URL: String(opt('aiostreams_url')).trim(),
     });
     for (const k of Object.keys(env)) if (env[k] === '') delete env[k];
+  } else if (MODE === 'aiometadata') {
+    fs.mkdirSync(path.join(DATA, 'app'), { recursive: true });
+    startRedis();
+    Object.assign(env, s.extra_env || {}, {
+      HOST_NAME: String(opt('base_url')).trim() || extUrl || lanUrl || `http://localhost:${APP.innerPort}`,
+      DATABASE_URI: 'sqlite://addon/data/db.sqlite', // /app/addon/data -> /data/app (see Dockerfile)
+      REDIS_URL: 'redis://127.0.0.1:6379',
+    });
+    const tmdb = String(opt('tmdb_api_key')).trim();
+    if (tmdb) env.BUILT_IN_TMDB_API_KEY = tmdb;
   } else {
     const user = String(opt('admin_user', 'admin')).trim() || 'admin';
     const pass = String(opt('admin_password')).trim() || s.admin_password;
@@ -356,13 +401,13 @@ function printInstallLinks(env, lanUrl, extUrl) {
   // what to do next, in the log
   const line = '─'.repeat(64);
   console.log(line);
-  log(`home network: ${lanUrl || '(unknown — set lan_ip)'}${MODE === 'subtitles' ? '/configure' : ''}`);
+  log(`home network: ${lanUrl || '(unknown — set lan_ip)'}${MODE === 'subtitles' ? '/configure' : MODE === 'aiometadata' ? '/configure' : ''}`);
   if (extUrl) {
-    log(`outside:      ${extUrl}${MODE === 'subtitles' ? '/configure' : ''}`);
+    log(`outside:      ${extUrl}${MODE === 'subtitles' ? '/configure' : MODE === 'aiometadata' ? '/configure' : ''}`);
     if (!custom && ip && port) log(`router:       forward TCP ${opt('public_port', port)} → ${ip} port ${port}  ("port forwarding" / "virtual server")`);
   } else log('outside:      off (enable public_access to watch away from home)');
   if (MODE === 'subtitles') log(`configuration password: ${env.CONFIG_PASSWORD}  (needed through the outside address)`);
-  else { log(`login: ${env.__LOGIN}`); delete env.__LOGIN; }
+  else if (MODE === 'aiostreams') { log(`login: ${env.__LOGIN}`); delete env.__LOGIN; }
   console.log(line);
 
   run(env);

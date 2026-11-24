@@ -38,4 +38,5 @@ class StremioAddressSensor(SensorEntity):
             "subtitles_url": f"{base}/api/stremio/{PATHS['subs']}" if base else None,
             "subtitles_configure": f"{base}/api/stremio/{PATHS['subs']}/configure" if base else None,
             "aiostreams_url": f"{base}/api/stremio/{PATHS['aio']}" if base else None,
+            "aiometadata_url": f"{base}/api/stremio/{PATHS['meta']}" if base else None,
         }

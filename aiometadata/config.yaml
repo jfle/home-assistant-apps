@@ -1,0 +1,26 @@
+name: AIOMetadata (Greek setup)
+version: "4.1.0"
+slug: aiometadata
+description: AIOMetadata catalogs and metadata for Stremio, with HTTPS, Nabu Casa / outside access and its own Redis cache
+url: https://github.com/jfle/home-assistant-apps/tree/main/aiometadata
+arch:
+  - aarch64
+  - amd64
+hassio_api: true
+ports:
+  8455/tcp: 8445
+ports_description:
+  8455/tcp: HTTPS for Stremio (forward this port on your router only if you don't use Nabu Casa)
+options:
+  public_access: true
+  public_ip: auto
+  public_port: 8445
+schema:
+  public_access: bool
+  public_ip: str
+  public_port: port
+  public_url: str?
+  lan_ip: str?
+  base_url: str?
+  tmdb_api_key: password?
+  migrate_from: str?

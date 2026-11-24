@@ -6,13 +6,14 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.core import callback
 
-from .const import CONF_AIO, CONF_SUBS, DEFAULT_AIO, DEFAULT_SUBS, DOMAIN
+from .const import CONF_AIO, CONF_META, CONF_SUBS, DEFAULT_AIO, DEFAULT_META, DEFAULT_SUBS, DOMAIN
 
 
 def _schema(cur: dict) -> vol.Schema:
     return vol.Schema({
         vol.Required(CONF_SUBS, default=cur.get(CONF_SUBS, DEFAULT_SUBS)): str,
         vol.Required(CONF_AIO, default=cur.get(CONF_AIO, DEFAULT_AIO)): str,
+        vol.Required(CONF_META, default=cur.get(CONF_META, DEFAULT_META)): str,
     })
 
 

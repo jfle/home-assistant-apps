@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [greek_subtitles, aiostreams]
+        app: [greek_subtitles, aiostreams, aiometadata]
     steps:
       - uses: actions/checkout@v5
       - name: Home Assistant app linter
@@ -24,12 +24,12 @@ jobs:
       - name: Syntax
         run: node --check greek_subtitles/rootfs/ha-start.js
       - name: Both apps ship the same launcher
-        run: cmp greek_subtitles/rootfs/ha-start.js aiostreams/rootfs/ha-start.js
+        run: cmp greek_subtitles/rootfs/ha-start.js aiostreams/rootfs/ha-start.js && cmp greek_subtitles/rootfs/ha-start.js aiometadata/rootfs/ha-start.js
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [greek_subtitles, aiostreams]
+        app: [greek_subtitles, aiostreams, aiometadata]
         arch: [amd64, aarch64]
     steps:
       - uses: actions/checkout@v5

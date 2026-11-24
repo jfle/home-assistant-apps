@@ -1,0 +1,27 @@
+configuration:
+  public_access:
+    name: Outside access
+    description: Build the outside address (local-ip.sh + public IP) — leave on; with Nabu Casa set public_url instead.
+  public_ip:
+    name: Public IP
+    description: auto, or your fixed public IP.
+  public_port:
+    name: Public port
+    description: The router port forwarded to this app (only without Nabu Casa).
+  public_url:
+    name: Public URL (optional)
+    description: e.g. your Nabu Casa address https://<id>.ui.nabu.casa/api/stremio/meta (from the Stremio via Nabu Casa integration).
+  lan_ip:
+    name: Home network IP (optional)
+    description: Only if it can't be detected.
+  base_url:
+    name: Addon address override (optional)
+    description: Leave empty; used for manifest and image links.
+  tmdb_api_key:
+    name: TMDB API key (optional)
+    description: Built-in TMDB key for the addon (imported from the Orange Pi when you migrate).
+  migrate_from:
+    name: Import from Orange Pi (optional, one-time)
+    description: URL of the archive made on the Orange Pi. Keeps your configurations; runs once.
+network:
+  8455/tcp: HTTPS for Stremio

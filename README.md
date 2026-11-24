@@ -9,6 +9,7 @@ with the same HTTPS, outside access and port forwarding as the Orange Pi install
 | App | What it does |
 |---|---|
 | [Greek Subtitles for Stremio](greek_subtitles) | Real Greek subtitles first (OpenSubtitles, retimed to your release with split-aware sync), AI translation as backup. Free local model first when your PC answers, then your cloud providers. |
+| [AIOMetadata (Greek setup)](aiometadata) | AIOMetadata catalogs and metadata with its own Redis cache, HTTPS and Nabu Casa address (/api/stremio/meta). |
 | [AIOStreams (Greek setup)](aiostreams) | AIOStreams with HTTPS, outside access and the Greek-subtitles templates (tablet 1080p / English + Greek). |
 
 ## Install
@@ -29,6 +30,7 @@ integration, **Stremio via Nabu Casa**, that publishes both apps on your Nabu Ca
 |---|---|
 | Greek Subtitles | `https://<id>.ui.nabu.casa/api/stremio/subs` (configure page: `/configure`, needs the configuration password) |
 | AIOStreams | `https://<id>.ui.nabu.casa/api/stremio/aio` (Stremio endpoints; open its web page at home) |
+| AIOMetadata | `https://<id>.ui.nabu.casa/api/stremio/meta` (Stremio endpoints; configure page at home on port 8445) |
 
 1. **Marketplace / HACS → ⋮ → Custom repositories** → `jfle/home-assistant-apps`, type *Integration* → download
    **Stremio via Nabu Casa**, restart Home Assistant.

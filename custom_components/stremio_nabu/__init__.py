@@ -1,6 +1,6 @@
 """Stremio via Nabu Casa.
 
-Publishes the Greek Subtitles and AIOStreams apps under Home Assistant's own web server, so Stremio reaches them
+Publishes the Greek Subtitles, AIOStreams and AIOMetadata apps under Home Assistant's own web server, so Stremio reaches them
 through your Nabu Casa remote address (https://<id>.ui.nabu.casa/api/stremio/subs and /api/stremio/aio) — no router
 port forwarding, no extra certificates.
 
@@ -21,7 +21,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
-from .const import CONF_AIO, CONF_SUBS, DEFAULT_AIO, DEFAULT_SUBS, DOMAIN, PATHS
+from .const import CONF_AIO, CONF_META, CONF_SUBS, DEFAULT_AIO, DEFAULT_META, DEFAULT_SUBS, DOMAIN, PATHS
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = [Platform.SENSOR]
@@ -120,6 +120,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN] = {
         "subs": str(conf.get(CONF_SUBS, DEFAULT_SUBS)).rstrip("/"),
         "aio": str(conf.get(CONF_AIO, DEFAULT_AIO)).rstrip("/"),
+        "meta": str(conf.get(CONF_META, DEFAULT_META)).rstrip("/"),
     }
     if first:  # views cannot be removed again, so register them once per Home Assistant run
         for key in PATHS:
