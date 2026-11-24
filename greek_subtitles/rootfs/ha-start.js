@@ -177,8 +177,112 @@ async function reachable(url) {
   try { const r = await fetch(url, { signal: AbortSignal.timeout(8000) }); return r.status < 500; } catch { return false; }
 }
 
+// ------------------------------------------------------------------------------------------- migration
+// One-time import of an Orange Pi install of AIO-Streams&Subtitles-Greek. Set migrate_from to the URL of an
+// archive made on the Pi with:
+//   sudo tar czf migrate.tgz -C / opt/aio-streams-subtitles-greek/data etc/aio-streams-subtitles-greek.env \
+//        opt/aiostreams/.env opt/aiostreams/data
+// The secret keys come along, so existing install links, logins and saved configurations keep working.
+// Whatever it replaces is moved to /data/pre-migration-<time>. Runs once per URL.
+function untar(buf) {
+  const files = [];
+  let long = null;
+  for (let o = 0; o + 512 <= buf.length;) {
+    const h = buf.subarray(o, o + 512);
+    if (h.every((b) => b === 0)) break;
+    const str = (a, b) => h.toString('utf8', a, b).replace(/\0[\s\S]*$/, '');
+    const size = parseInt(str(124, 136).trim() || '0', 8) || 0;
+    const type = String.fromCharCode(h[156] || 48);
+    const prefix = h.toString('latin1', 257, 263) === 'ustar\0' ? str(345, 500) : '';
+    const name = long || (prefix ? prefix + '/' : '') + str(0, 100);
+    long = null;
+    const body = buf.subarray(o + 512, o + 512 + size);
+    o += 512 + Math.ceil(size / 512) * 512;
+    if (type === 'L') { long = body.toString('utf8').replace(/\0[\s\S]*$/, ''); continue; }
+    if (type === 'x') { const m = /\d+ path=([^\n]*)\n/.exec(body.toString('utf8')); if (m) long = m[1]; continue; }
+    if (type === '0' || type === '7') files.push({ name: name.replace(/^(\.\/)+|^\//, ''), body });
+  }
+  return files;
+}
+
+function parseEnv(text) {
+  const e = {};
+  for (const l of text.split(/\r?\n/)) {
+    const m = /^\s*([A-Z0-9_]+)=(.*)$/.exec(l);
+    if (m) e[m[1]] = m[2].trim().replace(/^(['"])(.*)\1$/, '$2');
+  }
+  return e;
+}
+
+async function migrate() {
+  const url = String(opt('migrate_from')).trim();
+  if (!url) return;
+  const id = crypto.createHash('sha256').update(url).digest('hex');
+  const mark = path.join(DATA, 'migrated.json');
+  if ((readJson(mark) || {}).id === id) { log('Orange Pi import already done — you can clear migrate_from'); return; }
+  log('importing the Orange Pi setup…');
+  let files;
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(600000) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    let buf = Buffer.from(await r.arrayBuffer());
+    if (buf[0] === 0x1f && buf[1] === 0x8b) buf = require('zlib').gunzipSync(buf);
+    files = untar(buf);
+  } catch (e) { warn('Orange Pi import failed (' + e.message + ') — starting with the current settings'); return; }
+  const envOf = (n) => { const x = files.find((f) => f.name === n); return x ? parseEnv(x.body.toString('utf8')) : null; };
+  const backup = path.join(DATA, 'pre-migration-' + new Date().toISOString().replace(/[:.]/g, '-'));
+  const stash = (rel) => {
+    const src = path.join(DATA, rel);
+    if (!fs.existsSync(src)) return;
+    fs.mkdirSync(path.dirname(path.join(backup, rel)), { recursive: true });
+    fs.renameSync(src, path.join(backup, rel));
+  };
+  const write = (root, rel, body) => {
+    const dst = path.resolve(root, rel);
+    if (!dst.startsWith(path.resolve(root) + path.sep)) return false;
+    fs.mkdirSync(path.dirname(dst), { recursive: true });
+    fs.writeFileSync(dst, body, { mode: 0o600 });
+    return true;
+  };
+  const s = readJson(SECRETS_FILE) || {};
+  const done = [];
+  if (MODE === 'subtitles') {
+    const pre = 'opt/aio-streams-subtitles-greek/data/';
+    const data = files.filter((f) => f.name.startsWith(pre) && f.name.length > pre.length);
+    if (data.length) {
+      stash('app');
+      let n = 0;
+      for (const f of data) if (write(path.join(DATA, 'app'), f.name.slice(pre.length), f.body)) n++;
+      done.push(n + ' data files (secret key, sign-ins, settings, cache)');
+    }
+    const e = envOf('etc/aio-streams-subtitles-greek.env');
+    if (e && e.CONFIG_PASSWORD) { s.config_password = e.CONFIG_PASSWORD; done.push('configuration password'); }
+  } else {
+    const dbs = files.filter((f) => /^opt\/aiostreams\/data\/db\.sqlite(-wal|-shm|-journal)?$/.test(f.name));
+    if (dbs.length) {
+      for (const x of fs.readdirSync(DATA)) if (/^db\.sqlite/.test(x)) stash(x);
+      for (const f of dbs) write(DATA, path.basename(f.name), f.body);
+      done.push('database (users and saved configurations)');
+    }
+    const e = envOf('opt/aiostreams/.env');
+    if (e && e.SECRET_KEY) { s.secret_key = e.SECRET_KEY; done.push('secret key'); }
+    if (e && e.AIOSTREAMS_AUTH && e.AIOSTREAMS_AUTH.includes(':')) {
+      const i = e.AIOSTREAMS_AUTH.indexOf(':');
+      const user = e.AIOSTREAMS_AUTH.slice(0, i);
+      s.admin_password = e.AIOSTREAMS_AUTH.slice(i + 1);
+      done.push('admin login');
+      if (user !== (String(opt('admin_user', 'admin')).trim() || 'admin')) warn('the Orange Pi login user was "' + user + '" — set admin_user to it to keep the same login');
+    }
+  }
+  if (!done.length) { warn('the Orange Pi archive had nothing for this app — nothing changed'); return; }
+  writePrivate(SECRETS_FILE, JSON.stringify(s, null, 2));
+  writePrivate(mark, JSON.stringify({ id, at: new Date().toISOString(), imported: done, backup }, null, 2));
+  log('✓ imported from the Orange Pi: ' + done.join(', '));
+}
+
 // ------------------------------------------------------------------------------------------- main
 (async () => {
+  await migrate();
   const s = secrets();
   const ip = await lanIp();
   const port = await hostPort();
