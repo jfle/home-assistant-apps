@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.38.1-1
+- The first start downloads reference data (anime mappings, SeaDex) for several minutes before AIOStreams opens its
+  web server; the health check now waits up to 20 minutes, so Home Assistant no longer restarts it mid-download.
+- The log says so while it happens.
+
 ## 2.38.1
 - First Home Assistant app release: official AIOStreams v2.38.1 image with HTTPS (local-ip.sh), outside access via
   public IP + port forwarding or your own domain, generated secret key and admin login kept across updates, and the

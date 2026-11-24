@@ -244,6 +244,7 @@ async function reachable(url) {
   console.log(line);
 
   run(env);
+  if (MODE === 'aiostreams' && !fs.existsSync(path.join(DATA, 'db.sqlite'))) log('first start: AIOStreams downloads its reference data before its web page opens — this can take 5–15 minutes');
 
   if (extUrl) setTimeout(async () => {
     const ok = await reachable(`${extUrl}${APP.health}`);
