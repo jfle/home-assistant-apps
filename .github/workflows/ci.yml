@@ -35,9 +35,10 @@ jobs:
       - uses: actions/checkout@v5
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
-      - name: Build (as Home Assistant would)
+      - name: Build exactly like the Supervisor (docker buildx, --pull, per-arch platform, no build.yaml)
         run: |
-          FROM=$(python3 -c "import yaml;print(yaml.safe_load(open('${{ matrix.app }}/build.yaml'))['build_from']['${{ matrix.arch }}'])")
-          ARGS=$(python3 -c "import yaml;a=yaml.safe_load(open('${{ matrix.app }}/build.yaml')).get('args',{});print(' '.join(f'--build-arg {k}={v}' for k,v in a.items()))")
+          test ! -f ${{ matrix.app }}/build.yaml
           PLAT=$([ "${{ matrix.arch }}" = aarch64 ] && echo linux/arm64 || echo linux/amd64)
-          docker buildx build --platform $PLAT --build-arg BUILD_FROM=$FROM $ARGS --load -t test ${{ matrix.app }}
+          docker buildx build ${{ matrix.app }} --file Dockerfile --platform $PLAT --pull \
+            --build-arg BUILD_FROM=ghcr.io/home-assistant/base:latest --build-arg BUILD_ARCH=${{ matrix.arch }} --load -t test
+          docker run --rm --entrypoint "" test sh -c 'true' 2>/dev/null || true

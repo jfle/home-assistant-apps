@@ -1,8 +1,8 @@
-ARG BUILD_FROM
-FROM ${BUILD_FROM}
+# Base image and version live here (Supervisor 2026: build.yaml is deprecated). Multi-arch: arm64 + amd64.
+FROM node:22-alpine
 
 # The released Stremio addon, unchanged: https://github.com/jfle/aio-streams-subtitles-greek/releases
-ARG APP_VERSION
+ARG APP_VERSION=3.0.0
 RUN apk add --no-cache --virtual .fetch curl tar \
  && curl -fsSL "https://github.com/jfle/aio-streams-subtitles-greek/releases/download/v${APP_VERSION}/aio-streams-subtitles-greek-${APP_VERSION}.tar.gz" | tar -xz -C /opt \
  && mv /opt/aio-streams-subtitles-greek /opt/app \

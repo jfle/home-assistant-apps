@@ -1,5 +1,5 @@
-ARG BUILD_FROM
-FROM ${BUILD_FROM}
+# Official AIOStreams release image (multi-arch: arm64 + amd64). Supervisor 2026: build.yaml is deprecated.
+FROM ghcr.io/viren070/aiostreams:v2.38.1
 
 # The official AIOStreams image is distroless (Node only, no shell tools): the launcher is plain Node too.
 COPY rootfs/ha-start.js /ha-start.js
