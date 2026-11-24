@@ -1,5 +1,5 @@
 name: AIOStreams (Greek setup)
-version: "2.38.1-1"
+version: "2.38.1-2"
 slug: aiostreams
 description: AIOStreams with HTTPS, outside access and the Greek-subtitles templates, ready for the Greek Subtitles app
 url: https://github.com/jfle/home-assistant-apps/tree/main/aiostreams
@@ -27,3 +27,4 @@ schema:
   admin_password: password?
   auth_required: bool
   base_url: str?
+  migrate_from: str?

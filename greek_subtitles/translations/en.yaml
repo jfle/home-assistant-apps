@@ -23,6 +23,9 @@ configuration:
   aiostreams_url:
     name: AIOStreams address (optional)
     description: Shown on the configure page so you can add the subtitles to AIOStreams, e.g. https://192-168-1-128.local-ip.sh:8454
+  migrate_from:
+    name: Import from Orange Pi (optional, one-time)
+    description: URL of the archive made on the Orange Pi. Keeps your install links, logins and saved configurations; runs once.
 network:
   8453/tcp: HTTPS for Stremio (forward on your router for outside access)
   7000/tcp: Plain HTTP, home network only (optional)

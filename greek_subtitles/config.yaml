@@ -1,5 +1,5 @@
 name: Greek Subtitles for Stremio
-version: "3.0.0"
+version: "3.0.1"
 slug: greek_subtitles
 description: Real Greek subtitles first, retimed to your release; AI translation as backup (AIO-Streams&Subtitles-Greek)
 url: https://github.com/jfle/home-assistant-apps/tree/main/greek_subtitles
@@ -26,3 +26,4 @@ schema:
   config_password: password?
   local_llm_url: str?
   aiostreams_url: str?
+  migrate_from: str?

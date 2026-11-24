@@ -26,5 +26,8 @@ configuration:
   base_url:
     name: Base URL override (optional)
     description: Normally set automatically to the outside (or home) address.
+  migrate_from:
+    name: Import from Orange Pi (optional, one-time)
+    description: URL of the archive made on the Orange Pi. Keeps your install links, logins and saved configurations; runs once.
 network:
   8454/tcp: HTTPS for Stremio (forward on your router for outside access)

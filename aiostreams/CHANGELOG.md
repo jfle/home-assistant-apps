@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.38.1-2
+- One-time import of an Orange Pi install (`migrate_from`): database, secret key and admin login come across, so
+  existing manifests, users and saved configurations keep working. Replaced data is kept in /data/pre-migration-*.
+
 ## 2.38.1-1
 - The first start downloads reference data (anime mappings, SeaDex) for several minutes before AIOStreams opens its
   web server; the health check now waits up to 20 minutes, so Home Assistant no longer restarts it mid-download.
