@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.3
+- The log (and /data/install-links.txt) shows ready-made Stremio install links at every start — home network and anywhere
+  (e.g. Nabu Casa) — so the addon can be installed without typing the configuration password.
+
 ## 3.0.2
 - Packages AIO-Streams&Subtitles-Greek 3.0.1 (configure page works behind a path prefix).
 - `public_url` may include a path, for the Nabu Casa address of the **Stremio via Nabu Casa** integration

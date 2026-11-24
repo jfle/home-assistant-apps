@@ -280,6 +280,24 @@ async function migrate() {
   log('✓ imported from the Orange Pi: ' + done.join(', '));
 }
 
+// ------------------------------------------------------------------------------------------- install links
+// Ready-made Stremio install links in the log (only Home Assistant admins can read it), so the addon can be installed
+// without typing the configuration password: real subtitles first, then the local model, timing checked automatically.
+function printInstallLinks(env, lanUrl, extUrl) {
+  try {
+    const token = require('child_process').execFileSync(process.execPath,
+      ['-e', "process.stdout.write(require('./src/config').encodeConfig({ provider: 'custom' }))"],
+      { cwd: SUB_DIR, env: { ...process.env, ...env }, timeout: 20000 }).toString().trim();
+    if (!/^[\w-]{20,}$/.test(token)) throw new Error('unexpected output');
+    const lines = [];
+    if (extUrl) lines.push(`anywhere:     ${extUrl}/${token}/manifest.json`);
+    if (lanUrl) lines.push(`home network: ${lanUrl}/${token}/manifest.json`);
+    writePrivate(path.join(DATA, 'install-links.txt'), lines.join('\n') + '\n');
+    log('install links (local model first, then OpenSubtitles + AI backup) — paste one into Stremio or AIOStreams:');
+    for (const l of lines) log(`  ${l}`);
+  } catch (e) { warn(`could not prepare install links (${e.message}) — use the configure page`); }
+}
+
 // ------------------------------------------------------------------------------------------- main
 (async () => {
   await migrate();
@@ -348,6 +366,7 @@ async function migrate() {
   console.log(line);
 
   run(env);
+  if (MODE === 'subtitles') printInstallLinks(env, lanUrl, extUrl);
   if (MODE === 'aiostreams' && !fs.existsSync(path.join(DATA, 'db.sqlite'))) log('first start: AIOStreams downloads its reference data before its web page opens — this can take 5–15 minutes');
 
   if (extUrl) setTimeout(async () => {
