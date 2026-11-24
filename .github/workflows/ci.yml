@@ -1,0 +1,43 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [greek_subtitles, aiostreams]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Home Assistant app linter
+        uses: frenck/action-addon-linter@v2
+        with:
+          path: ./${{ matrix.app }}
+  launcher:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Syntax
+        run: node --check greek_subtitles/rootfs/ha-start.js
+      - name: Both apps ship the same launcher
+        run: cmp greek_subtitles/rootfs/ha-start.js aiostreams/rootfs/ha-start.js
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [greek_subtitles, aiostreams]
+        arch: [amd64, aarch64]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Build (as Home Assistant would)
+        run: |
+          FROM=$(python3 -c "import yaml;print(yaml.safe_load(open('${{ matrix.app }}/build.yaml'))['build_from']['${{ matrix.arch }}'])")
+          ARGS=$(python3 -c "import yaml;a=yaml.safe_load(open('${{ matrix.app }}/build.yaml')).get('args',{});print(' '.join(f'--build-arg {k}={v}' for k,v in a.items()))")
+          PLAT=$([ "${{ matrix.arch }}" = aarch64 ] && echo linux/arm64 || echo linux/amd64)
+          docker buildx build --platform $PLAT --build-arg BUILD_FROM=$FROM $ARGS --load -t test ${{ matrix.app }}

@@ -1,0 +1,28 @@
+configuration:
+  public_access:
+    name: Outside access
+    description: Also make the addon reachable away from home (Stremio on your phone / tablet on mobile data). Needs the port forwarded on your router.
+  public_ip:
+    name: Public IP
+    description: "'auto' detects your home's public IP; or enter it (e.g. 194.154.34.26). The outside address becomes https://<ip-with-dashes>.local-ip.sh:<public port>."
+  public_port:
+    name: Public port
+    description: The port on your router that is forwarded to this app's HTTPS port (Network tab). Default 8453.
+  public_url:
+    name: Own outside address (optional)
+    description: Your own https:// domain or tunnel instead of the public IP (e.g. https://subs.example.com).
+  lan_ip:
+    name: Home-network IP (optional)
+    description: Only if automatic detection picks the wrong interface (e.g. Wi-Fi instead of Ethernet).
+  config_password:
+    name: Configuration password (optional)
+    description: Protects the configure page through the outside address. Leave empty to use the generated one (shown in the log).
+  local_llm_url:
+    name: Local model (optional)
+    description: OpenAI-compatible address of your free local model, e.g. http://192.168.1.35:1234/v1 (LM Studio + Llama-Krikri). Tried first whenever its port answers.
+  aiostreams_url:
+    name: AIOStreams address (optional)
+    description: Shown on the configure page so you can add the subtitles to AIOStreams, e.g. https://192-168-1-128.local-ip.sh:8454
+network:
+  8453/tcp: HTTPS for Stremio (forward on your router for outside access)
+  7000/tcp: Plain HTTP, home network only (optional)

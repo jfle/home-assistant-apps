@@ -1,0 +1,30 @@
+configuration:
+  public_access:
+    name: Outside access
+    description: Also reachable away from home (forward the port on your router).
+  public_ip:
+    name: Public IP
+    description: "'auto' detects your public IP; or enter it. Outside address: https://<ip-with-dashes>.local-ip.sh:<public port>."
+  public_port:
+    name: Public port
+    description: Router port forwarded to this app's HTTPS port (Network tab). Default 8454.
+  public_url:
+    name: Own outside address (optional)
+    description: Your own https:// domain or tunnel instead of the public IP.
+  lan_ip:
+    name: Home-network IP (optional)
+    description: Only if automatic detection picks the wrong interface.
+  admin_user:
+    name: Admin user
+    description: AIOStreams login user.
+  admin_password:
+    name: Admin password (optional)
+    description: Leave empty to use the generated one (shown in the log).
+  auth_required:
+    name: Require login to use the addon
+    description: Ask for the login before anyone can create or use a configuration (recommended with your own public domain).
+  base_url:
+    name: Base URL override (optional)
+    description: Normally set automatically to the outside (or home) address.
+network:
+  8454/tcp: HTTPS for Stremio (forward on your router for outside access)

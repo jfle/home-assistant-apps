@@ -1,0 +1,32 @@
+name: Greek Subtitles for Stremio
+version: "3.0.0"
+slug: greek_subtitles
+description: Real Greek subtitles first, retimed to your release; AI translation as backup (AIO-Streams&Subtitles-Greek)
+url: https://github.com/jfle/home-assistant-apps/tree/main/greek_subtitles
+arch:
+  - aarch64
+  - amd64
+startup: application
+boot: auto
+init: true
+hassio_api: true
+ports:
+  8453/tcp: 8453
+  7000/tcp: null
+ports_description:
+  8453/tcp: HTTPS for Stremio (forward this port on your router to watch outside home)
+  7000/tcp: Plain HTTP, home network only (optional, off by default)
+watchdog: tcp://[HOST]:[PORT:8453]
+options:
+  public_access: true
+  public_ip: auto
+  public_port: 8453
+schema:
+  public_access: bool
+  public_ip: str
+  public_port: port
+  public_url: str?
+  lan_ip: str?
+  config_password: password?
+  local_llm_url: str?
+  aiostreams_url: str?
